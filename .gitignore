@@ -134,5 +134,6 @@ TrashBin/
 *.swp
 results/
 
-# video related
+# chunks related
 *.mp4
+*.exe
