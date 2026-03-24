@@ -2,6 +2,7 @@
 data_BC_BMI = read.csv('./data_case_day7.csv', row.names=1)
 data_BC_BMI["P004", ]
 
+
 # 提取数据
 data_BC_BMI$W
 data_BC_BMI$H
