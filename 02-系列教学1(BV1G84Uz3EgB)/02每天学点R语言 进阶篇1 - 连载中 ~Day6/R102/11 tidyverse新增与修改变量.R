@@ -10,3 +10,8 @@ data_new <- data %>% mutate(age_idx = Age * Age) %>%
 # base R
 data_base <- data.frame(data, age_index = data$Age * data$Age)
 data_base$age_index[data_base$age_index < 1000] = 1000
+
+
+# before
+age_idx <- data$Age * data$Age
+data.frame(data, age_idx)
