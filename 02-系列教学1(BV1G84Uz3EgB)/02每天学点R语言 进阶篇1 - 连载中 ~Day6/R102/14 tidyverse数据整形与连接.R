@@ -37,3 +37,4 @@ data_new3 <- data.frame(
 )
 
 data %>% left_join(data_new2, by = "PID") %>% left_join(data_new3, by = "PID")
+
