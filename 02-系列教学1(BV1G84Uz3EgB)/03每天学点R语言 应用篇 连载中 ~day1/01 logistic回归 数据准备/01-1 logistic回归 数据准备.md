@@ -27,6 +27,10 @@
     * 新增`TreatmentOutcome = OS_STATUS`；
     * 导出一个1500行版本，尽量贴近UP主视频里的规模。
 * 但是，这个1500行版本**不能保证100%和UP主用的对齐**了，但是应该足够接近😉
+![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260403223427813.png)
+
+## 数据分析
+* 在分析之前，需要对数据进行预处理，将**分类变量转换为factor**，以满足logistic回归的要求。
+* 步骤可以分为：数据导入 -> 核心变量选择 -> 分类与连续变量处理 -> 缺失值处理 -> 分组描述
 
 
-## 
