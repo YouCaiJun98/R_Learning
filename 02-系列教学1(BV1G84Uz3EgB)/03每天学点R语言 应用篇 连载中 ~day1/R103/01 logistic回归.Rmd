@@ -1,0 +1,25 @@
+---
+title: "01 logistic回归"
+date: "2026-04-03"
+output: html_document
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+# Day 1：医学数据的整理与二分类结局的基本描述
+目标：导入数据、处理变量类型、做基本描述，为 Logistic 做准备
+核心内容：
+  数据导入
+  核心变量选择
+  分类与连续变量处理
+  缺失值概览
+  分组描述
+输出：描述性统计表
+
+```{r}
+library(tidyverse)
+dat = read.csv("./data/data1.csv")
+dat_analysis = dat %>%
+  select(PATIENT_ID, TreatmentOutcome, AGE_AT_DIAGNOSIS, LATERALITY, ER_STATUS, HER2_STATUS, TUMOR_STAGE)
+```
