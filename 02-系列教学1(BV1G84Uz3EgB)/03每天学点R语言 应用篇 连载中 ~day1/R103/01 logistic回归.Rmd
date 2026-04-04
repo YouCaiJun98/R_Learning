@@ -38,4 +38,24 @@ data_analysis %>% summarise(across(everything(), ~ sum(is.na(.)))) %>%
                   pivot_longer(everything(), names_to = "variable", values_to = "n_missing") %>% 
                   mutate(p_missing = n_missing / 1500)
 ```
+## 分组描述
+### 连续变量
+```{r}
+data_analysis %>% group_by(TreatmentOutcome) %>% 
+      summarise(N = n(), Age_mean = mean(AGE_AT_DIAGNOSIS, na.rm=T),
+                Age_std = sd(AGE_AT_DIAGNOSIS, na.rm=T),
+                Age_median = median(AGE_AT_DIAGNOSIS, na.rm=T))
+```
+### 分类变量
+```{r}
+cat_by_outcome = function(var) {
+  data_analysis %>% count(TreatmentOutcome, {{var}}) %>% 
+    group_by(TreatmentOutcome) %>% mutate(prop = n / sum(n)) %>% ungroup()
+}
+```
+
+```{r}
+cat_by_outcome(var=LATERALITY)
+```
+
 
