@@ -1,0 +1,115 @@
+---
+title: "03 多因素logistic回归"
+date: "2026-04-05"
+output: html_document
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+# 本课概览
+目标：搭建多因素模型，能讲清楚“调整后 OR”的含义
+核心内容：
+    建立多因素模型：glm(y ~ x1 + x2 + x3, family=binomial())
+    共线性
+输出：多因素OR表
+
+## 数据导入
+```{r}
+library(tidyverse)
+library(broom)
+data = read.csv("./data/metabric_cleaned_1500.csv")
+
+```
+## 核心变量选择 & 分类与连续变量处理
+```{r}
+data_analysis <- data %>% select(PATIENT_ID, TreatmentOutcome, AGE_AT_DIAGNOSIS,
+                          LATERALITY, ER_STATUS, HER2_STATUS, TUMOR_STAGE) %>% 
+                          mutate(TreatmentOutcome = factor(TreatmentOutcome),
+                                 LATERALITY = factor(LATERALITY),
+                                 ER_STATUS = factor(ER_STATUS),
+                                 HER2_STATUS = factor(HER2_STATUS),
+                                 TUMOR_STAGE = factor(TUMOR_STAGE))
+```
+## 数据清理 - 删除含有NA的行
+```{r}
+data_analysis <- data_analysis %>% drop_na(LATERALITY, HER2_STATUS, TUMOR_STAGE)
+```
+## 多因素建模
+```{r}
+model_multi <- glm(TreatmentOutcome ~ AGE_AT_DIAGNOSIS +
+                     ER_STATUS + 
+                     HER2_STATUS + 
+                     TUMOR_STAGE, family = binomial(), data = data_analysis)
+summary(model_multi)
+```
+# 提取数据并分析
+```{r}
+C1 <- exp(model_multi[["coefficients"]])
+C2 <- exp(confint(model_multi))[,1]
+C3 <- exp(confint(model_multi))[,2]
+P <- summary(model_multi)$coefficients[,4]
+```
+# 结果打包
+```{r}
+result <- data.frame(C1, C2, C3, P)
+names(result) <- c("OR", "LCI", "UCI", "P")
+result
+```
+# 豆师傅版本
+```{r}
+# 提取 OR、95%CI、P 值 → 生成标准四列表
+library(broom)
+
+result_multi <- tidy(
+  model_multi,
+  conf.int = TRUE,    # 自动算95%CI
+  exponentiate = TRUE # 自动变 OR
+) %>%
+  filter(term != "(Intercept)") %>%  # 去掉截距
+  select(
+    变量 = term,
+    OR = estimate,
+    下限 = conf.low,
+    上限 = conf.high,
+    P值 = p.value
+  )
+
+# 查看结果
+result_multi
+```
+# ChatGPT结果
+```{r}
+# 提取结果
+coef_summary <- summary(model_multi)$coefficients
+
+# 计算 OR 和 CI
+OR  <- exp(coef(model_multi))
+CI  <- exp(confint(model_multi))  # 默认 profile likelihood
+
+# 组织成表
+result_table <- data.frame(
+  Variable = rownames(coef_summary),
+  OR = OR,
+  CI_lower = CI[, 1],
+  CI_upper = CI[, 2],
+  P_value = coef_summary[, 4]
+)
+
+# 查看结果
+print(result_table)
+```
+# ChatGPT - tidyverse风格
+```{r}
+library(broom)
+
+result_table <- tidy(model_multi, exponentiate = TRUE, conf.int = TRUE)
+
+result_table <- result_table[, c("term", "estimate", "conf.low", "conf.high", "p.value")]
+
+colnames(result_table) <- c("Variable", "OR", "CI_lower", "CI_upper", "P_value")
+
+print(result_table)
+```
+
+
