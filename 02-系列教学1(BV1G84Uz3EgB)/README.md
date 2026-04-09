@@ -9,5 +9,5 @@
     ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260409122844436.png)
 
 ## TODO
-- [] 或许该列一个函数与文档对应的速查表。
+- [x] 或许该列一个函数与文档对应的速查表。
     * 列一个各个课程pdf内容的介绍文档。
