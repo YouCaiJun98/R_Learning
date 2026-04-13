@@ -18,11 +18,11 @@ axis(side = 1, at = 1:30)  # 仅显示x轴刻度
 
 # 4、用内置数据集mtcars绘制如下图像，横坐标是变量wt,纵坐标是变量disp
 # ，hp的值越大点的颜色越深。
-col_mtcars <- colorRampPalette(brewer.pal(9, "Blues"))(length(unique(mtcars$hp)))
-col_idx <- cut(mtcars$hp, breaks = length(unique(mtcars$hp)), labels = FALSE)
+col_mtcars <- colorRampPalette(brewer.pal(9, "Blues"))(50)
+mtcars <- mtcars[order(mtcars$hp), ]
 
 plot(mtcars$wt, mtcars$disp,
      pch = 16, cex = 1.5,
-     col = col_mtcars[col_idx],
+     col = col_mtcars,
      main = "mtcars: wt vs disp (hp越深颜色越深)",
      xlab = "wt (车重)", ylab = "disp (排量)")
