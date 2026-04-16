@@ -1,7 +1,12 @@
 # 安装jiebaR
 library(devtools)
-install_github("qinwf/jiebaRD")
-install_github("qinwf/jiebaR")
+## github安装
+# install_github("qinwf/jiebaRD")
+# install_github("qinwf/jiebaR")
+## 本地安装
+## 注意文件路径！这里是把解压后的文件移动到了R201文件夹下！
+install_local('./jiebaRD-master/') # 记得修改DESCRIPTION文件！方法见附件！
+install_local('./jiebaR-master/') 
 
 # 加载jiebaR
 library(jiebaR)
