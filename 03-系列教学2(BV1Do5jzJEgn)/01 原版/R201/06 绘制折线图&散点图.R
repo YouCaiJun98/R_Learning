@@ -3,21 +3,21 @@ library(readxl)
 stock <- read_excel('./data/stock.xlsx')
 
 # 绘制折线图
-plot(stock$time, stock$SH_closing_price, type='l', ylim=c(20000, 40000))
-abline(h=30000, v=as.POSIXct("2021-10-3"),lty=4, col='red')
-lines(stock$time, stock$SZ_closing_price, lty=2)
+plot(stock$date, stock$SH_closing_price, type='l', ylim=c(2000, 5000))
+abline(h=30000, v=as.POSIXct("2016-10-3"),lty=4, col='red')
+lines(stock$date, stock$SZ_closing_price, lty=2)
 
 ## 横坐标排序后绘制折线图
 stock_new <- stock[order(stock$SH_closing_price), ]
 plot(stock_new$SH_closing_price, stock_new$investor_confidence_index, type='l')
 
 ## 更简单的方法
-matplot(stock$time, stock[, 2:4], lty = 1:3, type = 'l', col='black')
+matplot(stock$date, stock[, 2:4], lty = 1:3, type = 'l', col='black')
 
 
 # 绘制散点图
 ## 追加分类变量
-stock$label <- ifelse(stock$SH_closing_price < 30000, 1, 2)
+stock$label <- ifelse(stock$SH_closing_price < 3000, 1, 2)
 stock[c('SH_closing_price', 'label')]
 stock1 <- subset(stock, label == 1)
 stock2 <- subset(stock, label == 2)
