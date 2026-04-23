@@ -3,7 +3,7 @@ library(scales)
 
 # 查看tidyverse内置颜色（默认离散调色板 + scales/ggplot2 自带调色板）
 ## 默认离散调色板
-hue_pal()(64)
+hue_pal()(16)
 show_col(hue_pal()(64))
 
 
