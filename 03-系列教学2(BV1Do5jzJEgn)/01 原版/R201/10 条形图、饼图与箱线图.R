@@ -3,7 +3,7 @@ barplot(1:5)
 
 x <- table(mtcars$gear)
 barplot(x, names.arg = c('齿轮数-3', '齿轮数-4', '齿轮数-5'),
-        ylim=c(2,20),) #width=c(1, 2, 3))
+        ylim=c(0,20),) #width=c(1, 2, 3))
 ## 堆叠条形图
 x1 <- table(mtcars[c('vs', 'gear')])
 barplot(x1)
