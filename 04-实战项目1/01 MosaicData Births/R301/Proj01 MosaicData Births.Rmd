@@ -1,0 +1,49 @@
+---
+title: "Proj01 MosaicData Births"
+output: html_document
+---
+
+# Step 0 准备数据
+
+-   数据集介绍：`Births` 是 `mosaicData` 包中最经典的教学数据集之一，也是统计学入门课程中分析时间趋势、日期效应的常用示例数据。它来自于美国 CDC 公开数据（由 FiveThirtyEight 整理），记录了 1969-01-01 \~ 1988-12-31 全美每日出生数据。数据集中包括 7305 条观测（覆盖 10 年所有日期），常用来做时间序列分析、日期效应、可视化、假设检验的教学。
+
+-   数据导入
+
+```{r}
+install.packages("mosaicData")
+library(mosaicData)
+library(tidyverse)
+```
+
+-   数据检查
+
+```{r}
+head(Births)
+```
+
+## Step 1 数据理解与初始探索
+
+-   常用的数据检查方法1 - head
+
+```{r}
+head(Births)
+```
+
+-   常用的数据检查方法2 - glimpse(tidyverse)
+
+```{r}
+glimpse(Births)
+```
+
+-   进行基础的统计，建立数据直觉
+    -   例如，统计`births`变量基本信息（均值、最大最小值、中值等）
+
+```{r}
+summary(Births$births)
+```
+
+## Step 2 时间序列可视化
+
+## Step 3 周期性分析
+
+## Step 4 特征构造与分组分析
