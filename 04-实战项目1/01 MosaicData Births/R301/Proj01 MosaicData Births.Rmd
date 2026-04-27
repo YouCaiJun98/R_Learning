@@ -21,7 +21,7 @@ library(tidyverse)
 head(Births)
 ```
 
-## Step 1 数据理解与初始探索
+## Step 1 数据理解与初步探索
 
 -   常用的数据检查方法1 - head
 
@@ -43,7 +43,92 @@ summary(Births$births)
 ```
 
 ## Step 2 时间序列可视化
+* 用折线图画出数据变化趋势
+```{r}
+ggplot(Births, aes(x = date, y = births)) +
+  geom_line()
+```
+
+* 观察数据切片上的变化趋势
+```{r}
+Births_subset <- Births[1:100, ]
+
+ggplot(Births_subset, aes(x = date, y = births)) +
+  geom_line()
+```
+* 思考：出生人数表现出了怎样的变化趋势？**是否有规律可循呢**？
+
 
 ## Step 3 周期性分析
+* 构造新变量，对数据进行分组
+```{r}
+Births <- Births %>%
+  mutate(weekday = weekdays(date))
+# 检查构造后的新变量
+head(Births$weekday)
+```
+
+* 利用新变量（标签）对原始数据进行分组统计
+```{r}
+Births %>%
+  group_by(weekday) %>%
+  summarise(mean_births = mean(births))
+```
+
+* 将分组统计结果可视化出来
+```{r}
+# 将星期几按顺序排列
+week_order <- c("星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日")
+
+
+Births %>%
+  # 转为有序因子
+  mutate(weekday = factor(weekday, levels = week_order, ordered = TRUE)) %>%
+  group_by(weekday) %>%
+  summarise(mean_births = mean(births)) %>%
+  ggplot(aes(x = weekday, y = mean_births)) +
+  geom_col()
+```
+
+
+
 
 ## Step 4 特征构造与分组分析
+* 构造更多特征
+```{r}
+Births <- Births %>%
+  mutate(
+    month = as.integer(format(date, "%m")),
+    year = as.integer(format(date, "%Y"))
+  )
+```
+
+* 4.1 - 按月份分组
+```{r}
+Births %>%
+  group_by(month) %>%
+  summarise(mean_births = mean(births)) %>%
+  ggplot(aes(x = factor(month), y = mean_births)) +
+  geom_col(fill = "steelblue")
+```
+  
+
+* 4.2 - 按年份分组
+```{r}
+Births %>%
+  group_by(year) %>%
+  summarise(mean_births = mean(births)) %>%
+  ggplot(aes(x = year, y = mean_births)) +
+  geom_line()
+```
+
+* 4.2 - 多维对比
+```{r}
+Births %>%
+  group_by(year, month) %>%
+  summarise(mean_births = mean(births)) %>%
+  ggplot(aes(x = month, y = mean_births, color = factor(year))) +
+  geom_line()
+```
+
+
