@@ -1,0 +1,21 @@
+---
+title: "Proj 02 Timely and Effective Care by US States"
+output: html_document
+---
+
+# Step 1 数据理解与清洗
+## 读取数据
+```{r}
+library(readr)
+
+care <- read_csv("./data/care_state.csv")
+```
+
+
+
+# Step 2 
+
+# Step 3 
+
+
+# Step 4 
