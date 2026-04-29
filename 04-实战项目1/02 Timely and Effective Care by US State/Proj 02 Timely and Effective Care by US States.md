@@ -21,14 +21,36 @@
     * 可用来探索以下问题：哪些州急诊等待最长 / 最短？哪些病种 / 指标耗时最久？州人口与等待时间是否相关？
 
 ## Step 1 数据理解与清洗
-* 我们之前完成的proj 01数据比较规整、简单，本课中，我们遇到的数据是一个真实的医疗系统数据，它的变量多、结构复杂、而且不干净（存在缺失值等）
+* 我们之前完成的proj 01数据比较规整、简单，本课中，我们遇到的数据是一个真实的医疗系统数据，它的变量多、结构复杂、而且不干净（存在缺失值等）。
+* 首先，我们还是先把数据读进来，并做一个简单的可视化：
+    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260429122654569.png)
+    能看出来这是一个8列的数据，每列数据的含义可以在`TidyTuesday`上找到：
+    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260429122823096.png)
+    有以下几点需要注意：
+    * 这个数据中的 score 对应的**实际含义可以分为好几个类**！例如，对于 Emergency Department，它的 score 指的是在急诊室里等待的时间，这个分数越低越好；对于 Colonoscopy care，它的 score 指的是接受适当随访筛查结肠镜检查建议的患者比例，这个分数越高越好。所以在分析时，需要把不同的情况分开分析！
+    * 
+
+* 接下来，我们来检查数据中的缺失值：
+    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260429123033228.png)
+
+* 简单起见，我们直接剔除数据中的缺失值：
+    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260429125213312.png)
+
+
+* 简单总结 Step 1 的工作：首先加载数据，查看数据结构；接下来理解变量的含义（查看变量类型、对照说明）；最后处理缺失值（直接剔除NA值）。
 
 ## Step 2 
+
+
 
 ## Step 3 
 
 
+
+
 ## Step 4 
+
+
 
 
 

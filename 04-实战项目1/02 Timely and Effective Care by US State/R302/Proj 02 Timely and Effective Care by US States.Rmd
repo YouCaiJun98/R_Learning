@@ -10,6 +10,28 @@ library(readr)
 
 care <- read_csv("./data/care_state.csv")
 ```
+## 检查数据 1
+```{r}
+head(care)
+```
+
+## 检查数据 2
+```{r}
+library(dplyr)
+
+glimpse(care)
+```
+
+## 检查数据缺失值
+```{r}
+colSums(is.na(care))
+```
+## 剔除数据缺失值
+```{r}
+care_clean <- care %>%
+  filter(!is.na(score))
+colSums(is.na(care_clean))
+```
 
 
 
