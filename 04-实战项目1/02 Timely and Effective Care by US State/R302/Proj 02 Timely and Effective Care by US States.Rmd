@@ -33,9 +33,22 @@ care_clean <- care %>%
 colSums(is.na(care_clean))
 ```
 
+# Step 2 单变量分析
+## 对score做可视化（无分组）
+```{r}
+library(tidyverse)
+ggplot(care_clean, aes(x = score)) +
+  geom_histogram(bins = 40, fill = "steelblue")
+```
+
+## 对score做可视化（按照医疗场景进行分组）
+```{r}
+ggplot(care_clean, aes(x = score)) +
+  geom_histogram(bins = 30, fill = "steelblue") +
+  facet_wrap(~condition, scales = "free")
+```
 
 
-# Step 2 
 
 # Step 3 
 

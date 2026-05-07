@@ -26,9 +26,6 @@
     ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260429122654569.png)
     能看出来这是一个8列的数据，每列数据的含义可以在`TidyTuesday`上找到：
     ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260429122823096.png)
-    有以下几点需要注意：
-    * 这个数据中的 score 对应的**实际含义可以分为好几个类**！例如，对于 Emergency Department，它的 score 指的是在急诊室里等待的时间，这个分数越低越好；对于 Colonoscopy care，它的 score 指的是接受适当随访筛查结肠镜检查建议的患者比例，这个分数越高越好。所以在分析时，需要把不同的情况分开分析！
-    * 
 
 * 接下来，我们来检查数据中的缺失值：
     ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260429123033228.png)
@@ -37,13 +34,25 @@
     ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260429125213312.png)
 
 
-* 简单总结 Step 1 的工作：首先加载数据，查看数据结构；接下来理解变量的含义（查看变量类型、对照说明）；最后处理缺失值（直接剔除NA值）。
+* 简单总结 Step 1 的工作：首先加载数据，查看数据结构；接下来理解变量的含义（查看变量类型、理解变量的实际含义）；最后处理缺失值（直接剔除NA值）。
 
-## Step 2 
+## Step 2 单变量分析
+* 这个数据集中，最重要的因变量是 score，我们对 score 进行可视化：
+    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507124540390.png)
+    我们发现 score 的**取值范围波动很大**！
+
+* 这是因为这个数据中的 score 对应的**实际含义可以分为好几个类**！例如，对于 Emergency Department，它的 score 指的是在急诊室里等待的间，这个分数越低越好；对于 Colonoscopy care，它的 score 指的是接受适当随访筛查结肠镜检查建议的患者比例，这个分数越高越好。所在分析时，**需要把不同的情况分开分析**！
+
+* 按照医疗场景分组后，score 的分布与数值范围就更正常一些了：
+    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507124738494.png)
 
 
+
+* 简单总结 Step 2 的工作：在判断同一变量内的数据含义是否一致 / 是否可比
 
 ## Step 3 
+
+
 
 
 
