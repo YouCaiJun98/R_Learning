@@ -46,13 +46,53 @@
 * 按照医疗场景分组后，score 的分布与数值范围就更正常一些了：
     ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507124738494.png)
 
+* 当然，我们也可以和 proj 01 里做过的那样，观察其他自变量的分布。例如，我们可以观察州的分布频数：
+    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507185056436.png)
+
+* 简单总结 Step 2 的工作：检查自变量/因变量的数据分布，查看是否存在异常。需要特别注意的是，有时需要**判断同一变量内的数据含义是否一致 / 是否可比**。
+
+## Step 3 多变量分析
+* 接下来，我们可以考虑分析多个变量之间的关系。对于这个数据集，我们可以提出很多问题，例如：
+    * Q1：不同州的医疗表现有没有差异？
+    * Q2：不同医疗场景之间，有没有差异？
+* 当然，我们需要在同一个 measure（同一个指标）下进行比较。对于Q1，
+    * 我们首先需要从已有数据中筛选出来我们关心的指标，这里，我们选择评估每个州急诊接待时间，看看它们的分布差异。
+    
+    * 我们先过滤原始数据，从中选择 condition 为 Emergency Department 的数据，
+        ```R
+        cond_1 <- "Emergency Department"
+
+        care_ed <- care_clean %>%
+            filter(condition == cond_1)
+        ```
+        我们发现，哪怕在同一个医疗场景（Emergency Department）下，score 对应的物理含义都是不一样的：
+        ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260509171129106.png)
+    
+    * 所以，我们需要对样例进行进一步限制，确保我们收集的数据的物理含义是一致的：
+        ```R
+        cond_1 <- "Emergency Department"
+        cond_2 <- "OP_18"
+
+        care_ed2 <- care_clean %>%
+            filter(condition == cond_1, str_detect(measure_id, cond_2))
+        ```
+        过滤之后，我们发现，哪怕 measure_id 都限定为了包含 "OP_18"，这些数据的物理含义还是有差异：
+        ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260509172652722.png)
+        * "OP_18b"指的是急诊科通用患者的离院等待时间（面向所有急诊患者，统计他们从就诊到离开的耗时）
+        * "OP_18c"指的是急诊科精神 / 心理健康患者的离院等待时间（专门面向精神 / 心理健康问题的患者）
+        * 后缀"_LOW_MIN"指的是低百分位等待时间，代表等待时间较短的患者群体的水平（比如第 25 百分位）
+
+    * 所以，我们要把样例的过滤条件设置得更详细一些，我们只看“急诊科通用患者的离院等待时间中位数”：
+        ```R
+        cond_1 <- "Emergency Department"
+        cond_2 <- "OP_18c"
+
+        care_ed3 <- care_clean %>%
+            filter(condition == cond_1, measure_id == cond_2)
+        ```
 
 
-* 简单总结 Step 2 的工作：在判断同一变量内的数据含义是否一致 / 是否可比
-
-## Step 3 
-
-
+* 对于Q2，
 
 
 

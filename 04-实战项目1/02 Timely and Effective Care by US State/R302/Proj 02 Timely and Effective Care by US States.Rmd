@@ -48,9 +48,50 @@ ggplot(care_clean, aes(x = score)) +
   facet_wrap(~condition, scales = "free")
 ```
 
+## 检查自变量分布
+```{r}
+care_clean %>%
+  count(state) %>%
+  ggplot(aes(x = reorder(state, n), y = n)) +
+  geom_col() +
+  coord_flip()
+```
 
+# Step 3 多变量分析
+## 3.1 分析不同州医疗表现（急诊接待时间） - 数据清理1
+```{r}
+cond_1 <- "Emergency Department"
 
-# Step 3 
+care_ed1 <- care_clean %>%
+  filter(condition == cond_1)
+```
+
+## 3.2 分析不同州医疗表现（急诊接待时间） - 数据清理2
+```{r}
+cond_1 <- "Emergency Department"
+cond_2 <- "OP_18"
+
+care_ed2 <- care_clean %>%
+  filter(condition == cond_1, str_detect(measure_id, cond_2))
+```
+
+## 3.3 分析不同州医疗表现（急诊接待时间） - 数据清理3
+```{r}
+cond_1 <- "Emergency Department"
+cond_2 <- "OP_18c"
+
+care_ed3 <- care_clean %>%
+  filter(condition == cond_1, measure_id == cond_2)
+```
+
+## 3.4 分析不同州医疗表现（急诊接待时间） - 按州对比
+```{r}
+care_ed3 %>%
+  ggplot(aes(x = reorder(state, score), y = score)) +
+  geom_col(fill = "steelblue") +
+  coord_flip()
+```
+
 
 
 # Step 4 
