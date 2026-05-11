@@ -38,24 +38,34 @@
 
 ## Step 2 单变量分析
 * 这个数据集中，最重要的因变量是 score，我们对 score 进行可视化：
-    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507124540390.png)
+    <div align="center">
+        <img src="https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507124540390.png" width="60%" height="auto">
+    </div>
+
     我们发现 score 的**取值范围波动很大**！
 
 * 这是因为这个数据中的 score 对应的**实际含义可以分为好几个类**！例如，对于 Emergency Department，它的 score 指的是在急诊室里等待的间，这个分数越低越好；对于 Colonoscopy care，它的 score 指的是接受适当随访筛查结肠镜检查建议的患者比例，这个分数越高越好。所在分析时，**需要把不同的情况分开分析**！
 
 * 按照医疗场景分组后，score 的分布与数值范围就更正常一些了：
-    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507124738494.png)
+    <div align="center">
+        <img src="https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507124738494.png" width="60%" height="auto">
+    </div>
 
 * 当然，我们也可以和 proj 01 里做过的那样，观察其他自变量的分布。例如，我们可以观察州的分布频数：
-    ![](https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507185056436.png)
+    <div align="center">
+        <img src="https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260507185056436.png" width="60%" height="auto">
+    </div>
+    
+    * 不同州出现的频数不一样，说明不同州的数据收集存在差异。
 
 * 简单总结 Step 2 的工作：检查自变量/因变量的数据分布，查看是否存在异常。需要特别注意的是，有时需要**判断同一变量内的数据含义是否一致 / 是否可比**。
 
 ## Step 3 多变量分析
 * 接下来，我们可以考虑分析多个变量之间的关系。对于这个数据集，我们可以提出很多问题，例如：
     * Q1：不同州的医疗表现有没有差异？
-    * Q2：不同医疗场景之间，有没有差异？
-* 当然，我们需要在同一个 measure（同一个指标）下进行比较。对于Q1，
+    * Q2：同一个州，在不同医疗指标上的表现是否一致？
+
+* 对于Q1，我们需要在同一个 measure（同一个指标）下进行比较
     * 我们首先需要从已有数据中筛选出来我们关心的指标，这里，我们选择评估每个州急诊接待时间，看看它们的分布差异。
     
     * 我们先过滤原始数据，从中选择 condition 为 Emergency Department 的数据，
@@ -91,8 +101,18 @@
             filter(condition == cond_1, measure_id == cond_2)
         ```
 
+    * 最后，我们可视化不同州急诊科通用患者的离院等待时间中位数：
+        <div align="center">
+            <img src="https://raw.githubusercontent.com/YouCaiJun98/MyPicBed/main/imgs/20260511121946239.png" width="60%" height="auto">
+        </div>
+        
+        从这张图中，我们可以得出一些结论，比如：
+        * 在同一个医疗指标下（急诊科通用患者的离院等待时间），不同州之间存在明显差异。
+        * 这可能是因为各州的医疗资源、人口密度、医院负荷不同导致的。
+        * 但是，这个结论只能说“**相关**”，不能说“**因果**”，因为单纯靠数据分析只能得到相关性的结果，不能把它当成因果性的证据！
 
-* 对于Q2，
+* 对于Q2，我们可以在同一个 state（同一个州）下比较不同的 measure 。
+    * 我们还是以急诊为例，查看同一个州的不同 measure：
 
 
 

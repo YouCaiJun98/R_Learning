@@ -92,6 +92,17 @@ care_ed3 %>%
   coord_flip()
 ```
 
+## 3.5 分析同一个州不同医疗指标的差异
+```{r}
+care_clean %>%
+  group_by(condition) %>%
+  summarise(mean_score = mean(score, na.rm = TRUE)) %>%
+  ggplot(aes(x = reorder(condition, mean_score), y = mean_score)) +
+  geom_col(fill = "tomato") +
+  coord_flip()
+```
+
+
 
 
 # Step 4 
