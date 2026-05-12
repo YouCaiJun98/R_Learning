@@ -92,14 +92,48 @@ care_ed3 %>%
   coord_flip()
 ```
 
-## 3.5 分析同一个州不同医疗指标的差异
+## 3.5 分析同一个州不同医疗指标的差异 - 同一州内
 ```{r}
+state_ <- "AK"
+cond <- "Emergency Department"
+
 care_clean %>%
-  group_by(condition) %>%
-  summarise(mean_score = mean(score, na.rm = TRUE)) %>%
-  ggplot(aes(x = reorder(condition, mean_score), y = mean_score)) +
+  filter(state == state_, condition == cond) %>%
+  ggplot(aes(x = reorder(measure_id, score), y = score)) +
   geom_col(fill = "tomato") +
   coord_flip()
+```
+## 3.6 分析同一个州不同医疗指标的差异 - 两个州的对比
+```{r}
+states <- c("AK", "AL")
+cond <- "Emergency Department"
+
+data_compare <- care_clean %>%
+  filter(
+    state %in% states,
+    condition == cond,
+  )  %>%
+  group_by(measure_id) %>%
+  filter(n_distinct(state) == 2) %>%  # 只保留同时存在AK和AL数据的指标
+  ungroup()
+
+ggplot(data_compare, aes(
+  x = reorder(measure_id, score),
+  y = score,
+  fill = state
+)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  coord_flip() +
+  scale_fill_manual(
+    values = c("AK" = "tomato", "AL" = "steelblue"),
+    name = "State"
+  ) + 
+  labs(
+    x = "指标ID",
+    y = "Score",
+    title = "AK vs AL 急诊科指标得分对比"
+  ) +
+  theme_minimal()
 ```
 
 
