@@ -137,6 +137,41 @@ ggplot(data_compare, aes(
 ```
 
 
+# Step 4 将分析组织成故事
+## 4.1 数据清理 - 急诊科 + 等待中位时间（和3.3一致）
+```{r}
+cond_1 <- "Emergency Department"
+cond_2 <- "OP_18c"
+
+care_ed4 <- care_clean %>%
+  filter(condition == cond_1, measure_id == cond_2)
+```
+
+## 4.2 建立整体印象 - 检查数据分布
+```{r}
+ggplot(care_ed4, aes(x = score)) +
+  geom_histogram(bins = 30, fill = "steelblue")
+```
+
+## 4.3 按州比较等待时间差异
+```{r}
+care_ed4 %>%
+  ggplot(aes(x = reorder(state, score), y = score)) +
+  geom_col(fill = "tomato") +
+  coord_flip()
+```
+
+## 4.5 微调图像
+```{r}
+care_ed4 %>%
+  ggplot(aes(x = reorder(state, score), y = score)) +
+  geom_col(fill = "tomato") +
+  coord_flip() +
+  labs(
+    title = "Emergency Department Wait Time by State",
+    x = "State",
+    y = "Score"
+  )
+```
 
 
-# Step 4 
