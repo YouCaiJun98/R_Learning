@@ -2,4 +2,323 @@
 title: "Proj 03 Patient Risk Profiles"
 output: html_document
 ---
+## 加载依赖
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(reshape2)
+```
+
+
+# 1 数据理解与变量探索
+
+## 数据导入
+
+```{r}
+risk <- read_csv("./data/patient_risk_profiles.csv")
+```
+
+## 数据检查
+
+```{r}
+glimpse(risk)
+
+head(risk)
+```
+
+## 检查缺失值
+```{r}
+colSums(is.na(risk))
+```
+
+## 数据探索 1 - 检查 0/1 变量
+```{r}
+# 随便挑一个变量
+risk %>%
+  count(`Hypertension in prior year`)
+
+# 看一个人口学变量
+risk %>%
+  count(`Sex = FEMALE`)
+```
+
+## 数据探索 2 - 检查人口学变量是否合理
+```{r}
+# 检查年龄组
+age_cols <- risk %>%
+  select(starts_with("age group"))
+
+risk %>%
+  mutate(n_age_group = rowSums(select(., starts_with("age group")))) %>%
+  count(n_age_group)
+
+# 检查性别变量
+risk %>%
+  mutate(n_sex = `Sex = FEMALE` + `Sex = MALE`) %>%
+  count(n_sex)
+```
+
+## 数据探索 3 - 探索既往疾病与用药特征
+```{r}
+risk %>%
+  summarise(
+    hypertension_rate = mean(`Hypertension in prior year`),
+    obesity_rate = mean(`Obesity in prior year`),
+    smoking_rate = mean(`Smoking in prior year`),
+    diabetes_rate = mean(`Type 2 Diabetes Mellitus (DM), with no type 1 or secondary DM in prior year`)
+  )
+```
+
+## 数据探索 4 - 探索预测风险变量
+```{r}
+# 检查比例
+risk %>%
+  summarise(
+    mean_pe = mean(`predicted risk of Pulmonary Embolism`),
+    mean_dementia = mean(`predicted risk of Dementia`),
+    mean_migraine = mean(`predicted risk of Migraine`)
+  )
+
+# 画分布
+ggplot(risk, aes(x = `predicted risk of Dementia`)) +
+  geom_histogram(bins = 30)
+```
+
+# 2 多变量 EDA 与风险画像
+## 特征组合
+```{r}
+disease_data <- risk %>%
+  select(
+    `Hypertension in prior year`,
+    `Obesity in prior year`,
+    `Smoking in prior year`,
+    `Hyperlipidemia in prior year`,
+    `Heart failure in prior year`
+  )
+
+cor(disease_data)
+
+disease_cor <- cor(disease_data)
+cor_melt <- melt(disease_cor)
+
+ggplot(cor_melt, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1, 1), space = "Lab", 
+                       name="Correlation") +
+  geom_text(aes(label = round(value, 2)), color = "black", size = 3) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(x = "", y = "", title = "Risk Factors Correlation Matrix")
+```
+
+## 疾病共现
+```{r}
+risk %>%
+  count(
+    `Hypertension in prior year`,
+    `Type 2 Diabetes Mellitus (DM), with no type 1 or secondary DM in prior year`
+  )
+```
+
+
+
+## 年龄组与风险模式
+```{r}
+# 人群中发生痴呆症风险的平均值
+risk %>%
+  summarise(
+    dementia_risk = mean(`predicted risk of Dementia`)
+  )
+
+# 按年龄进行分组
+risk_long_age <- risk %>%
+  pivot_longer(
+    cols = starts_with("age group"),
+    names_to = "age_group",
+    values_to = "value"
+  ) %>%
+  filter(value == 1)
+
+# 按照年龄分组检查风险
+risk_long_age %>%
+  group_by(age_group) %>%
+  summarise(
+    mean_dementia_risk =
+      mean(`predicted risk of Dementia`)
+  )
+```
+
+## 哪些特征与 predicted risk 更相关
+```{r}
+# 高血压和肺栓塞风险的关系
+ggplot(
+  risk,
+  aes(
+    x = factor(`Hypertension in prior year`),
+    y = `predicted risk of Pulmonary Embolism`
+  )
+) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(
+    alpha = 0.05,
+    width = 0.2
+  )
+
+# 多个风险因素与肺栓塞风险的关系
+features <- c(
+  "Hypertension in prior year",
+  "Obesity in prior year",
+  "Smoking in prior year",
+  "Heart failure in prior year",
+  "Hyperlipidemia in prior year",
+  "Type 2 Diabetes Mellitus (DM), with no type 1 or secondary DM in prior year"
+)
+
+risk_long <- risk %>%
+  select(
+    all_of(features),
+    `predicted risk of Pulmonary Embolism`
+  ) %>%
+  pivot_longer(
+    cols = all_of(features),
+    names_to = "feature",
+    values_to = "value"
+  )
+
+ggplot(
+  risk_long,
+  aes(
+    x = factor(value),
+    y = `predicted risk of Pulmonary Embolism`
+  )
+) +
+  geom_violin(fill = "skyblue") +
+  facet_wrap(~ feature, scales = "free_x") +
+  labs(
+    x = "Feature present",
+    y = "Predicted risk"
+  )
+```
+
+# 3 构造 Outcome 与 Logistic Regression 入门
+## 构造二元结局变量
+```{r}
+threshold <- quantile(
+  risk$`predicted risk of Pulmonary Embolism`,
+  0.9
+)
+
+risk <- risk %>%
+  mutate(
+    high_pe_risk =
+      if_else(
+        `predicted risk of Pulmonary Embolism`
+          >= threshold,
+        1,
+        0
+      )
+  )
+```
+
+## Logistic Regression 入门
+```{r}
+# 建立模型
+model <- glm(
+  high_pe_risk ~
+    `Heart failure in prior year`,
+  family = "binomial",
+  data = risk
+)
+
+# 检查模型
+summary(model)
+```
+
+# 4 单因素 Logistic Regression
+## 计算OR值
+```{r}
+exp(coef(model))
+```
+
+## 计算OR值的95%置信区间
+```{r}
+exp(confint(model))
+```
+
+# 5 多因素 Logistic Regression
+## 单因素 Logistic Regression
+```{r}
+# 单因素 Logistic Regression
+model_hf_single <- glm(
+  high_pe_risk ~
+    `Heart failure in prior year`,
+  family = "binomial",
+  data = risk
+)
+
+exp(coef(model_hf_single))
+```
+## 多因素 Logistic Regression
+```{r}
+model_multi <- glm(
+  high_pe_risk ~
+    `Heart failure in prior year` +
+    `age group:  80 -  84` +
+    `Hypertension in prior year`,
+  family = "binomial",
+  data = risk
+)
+
+exp(coef(model_multi))
+```
+
+## 模型预测
+```{r}
+# 预测原始数据中的疾病概率
+predict(model_multi, type = "response")
+
+# 预测新样本的疾病概率
+new_patient <- data.frame(
+  check.names = FALSE,
+  `Heart failure in prior year` = 1,
+  `age group:  80 -  84` = 1,
+  `Hypertension in prior year` = 0
+)
+
+predict(model_multi, newdata = new_patient, type = "response")
+```
+
+
+
+# 6 模型局限性
+## 模型结果异常（稀疏数据）
+```{r}
+model_multi <- glm(
+  high_pe_risk ~
+    `Heart failure in prior year` +
+    `age group:  85 -  89` +
+    `Hypertension in prior year`,
+  family = "binomial",
+  data = risk
+)
+
+exp(coef(model_multi))
+```
+
+## 真实模型不一定符合直觉
+```{r}
+model <- glm(
+  high_pe_risk ~
+    `Hypertension in prior year` +
+    `Heart failure in prior year` +
+    `Type 2 Diabetes Mellitus (DM), with no type 1 or secondary DM in prior year`,
+  family = "binomial",
+  data = risk
+)
+
+summary(model)
+```
+
+
 
