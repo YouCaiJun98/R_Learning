@@ -7,6 +7,7 @@ output: html_document
 library(tidyverse)
 library(sf)
 library(maps)
+library(ggrepel)
 ```
 
 
@@ -296,9 +297,80 @@ ggplot(
 ```
 
 
-
-
 # 4 从疾病数量到疾病负担
+## 发病率排序
+```{r}
+tb %>%
+  filter(year == 2023) %>%
+  select(
+    country,
+    e_inc_100k
+  ) %>%
+  arrange(desc(e_inc_100k)) %>%
+  slice_head(n = 10)
+```
+## 死亡率排序
+```{r}
+tb %>%
+  filter(year == 2023) %>%
+  select(
+    country,
+    e_mort_100k
+  ) %>%
+  arrange(desc(e_mort_100k)) %>%
+  slice_head(n = 10)
+```
+
+
+## 比较发病率与死亡率
+```{r}
+tb %>%
+  group_by(country) %>%
+  summarise(
+    mean_incidence =
+      mean(e_inc_100k, na.rm = TRUE),
+    mean_mortality =
+      mean(e_mort_100k, na.rm = TRUE)
+  )
+```
+
+## 发病率与CFR
+```{r}
+tb_cfr <- tb %>%
+  filter(year == 2023) %>%
+  select(
+    country,
+    e_inc_100k,
+    cfr
+  ) %>%
+  drop_na()
+
+ggplot(
+  tb_cfr,
+  aes(
+    x = e_inc_100k,
+    y = cfr
+  )
+) +
+
+  geom_point(
+    alpha = 0.7
+  ) +
+
+  geom_text_repel(
+    aes(label = country),
+    size = 3
+  ) +
+
+  labs(
+    title = "Incidence vs CFR",
+    x = "Incidence per 100k",
+    y = "Case Fatality Rate"
+  ) +
+
+  theme_minimal()
+```
+
 
 
 # 5 HIV、人口与 TB 风险模式
