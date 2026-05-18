@@ -1,3 +1,280 @@
 library(tidyverse)
+library(sf)
+library(maps)
+library(ggrepel)
 
+# 1 数据理解与流行病学指标理解
+## 数据理解
 tb <- read_csv("who_tb_data.csv")
+
+### 观察数据
+glimpse(tb)
+
+### 检查缺失值
+colSums(is.na(tb))
+
+## 流行病学指标
+### 检查发病计数和发病率排名前10的国家
+tb %>%
+  arrange(desc(e_inc_num)) %>%
+  select(country, year, e_inc_num) %>%
+  head(10)
+
+tb %>%
+  arrange(desc(e_inc_100k)) %>%
+  select(country, year, e_inc_100k) %>%
+  head(10)
+
+### 检查China、Germany、India、South Africa、United States of America等国2023年
+### TB 死亡率数据
+countries_to_plot <- c("China", "Germany", "India", "South Africa", "United States of America")
+tb_recent <- tb %>%
+  filter(country %in% countries_to_plot, year == max(year, na.rm = TRUE)) %>%
+  select(country, year, e_inc_100k, e_mort_100k) %>%
+  rename(
+    Incidence = e_inc_100k,
+    Mortality = e_mort_100k
+  )
+print(tb_recent)
+
+### 检查上述国家2023年 TB 病死率数据
+tb_cfr <- tb %>%
+  filter(country %in% countries_to_plot, year == max(year, na.rm = TRUE)) %>%
+  select(country, year,
+         e_inc_100k,    # 每10万人发病率
+         e_mort_100k,   # 每10万人死亡率
+         cfr) %>%        # 数据自带的CFR字段
+  mutate(
+    # 用发病率和死亡率手动计算CFR
+    calc_cfr = e_mort_100k / e_inc_100k,
+    calc_cfr_pct = scales::percent(calc_cfr, accuracy = 0.01)
+  ) %>%
+  rename(
+    incidence_per_100k = e_inc_100k,
+    mortality_per_100k = e_mort_100k
+  )
+print(tb_cfr)
+
+
+# 2 全球 TB burden 的空间分布
+## 以国家为单位检查按年度平均发病率
+tb %>%
+  group_by(country) %>%
+  summarise(
+    mean_incidence =
+      mean(e_inc_100k, na.rm = TRUE)
+  ) %>%
+  arrange(desc(mean_incidence))
+
+## 以区域为单位检查按年度平均发病率，并画出条形图作可视化。
+tb_region <- tb %>%
+  group_by(g_whoregion) %>%
+  summarise(
+    mean_incidence = mean(e_inc_100k, na.rm = TRUE),
+    mean_mortality = mean(e_mort_100k, na.rm = TRUE)
+  )
+
+ggplot(
+  tb_region,
+  aes(
+    x = reorder(g_whoregion, mean_incidence),
+    y = mean_incidence
+  )
+) +
+  geom_col() +
+  coord_flip()
+
+## 地图可视化 - 做2023年全球TB发病率的地图可视化
+world_map <- map_data("world")
+
+tb_2023 <- tb %>%
+  filter(year == 2023) %>%
+  select(
+    region = country,
+    e_inc_100k
+  )
+
+tb_2023 <- tb_2023 %>%
+  mutate(
+    region = case_when(
+      region == "United States of America" ~ "USA",
+      region == "Russian Federation" ~ "Russia",
+      region == "United Kingdom of Great Britain and Northern Ireland" ~ "UK",
+      region == "Viet Nam" ~ "Vietnam",
+      region == "Democratic People's Republic of Korea" ~ "North Korea",
+      region == "Republic of Korea" ~ "South Korea",
+      region == "Iran (Islamic Republic of)" ~ "Iran",
+      TRUE ~ region
+    )
+  )
+
+world_tb <- world_map %>%
+  left_join(tb_2023, by = "region")
+
+ggplot(world_tb,
+       aes(x = long,
+           y = lat,
+           group = group)) +
+  
+  geom_polygon(aes(fill = e_inc_100k),
+               color = "white",
+               linewidth = 0.1) +
+  
+  coord_fixed(1.3) +
+  
+  scale_fill_viridis_c(
+    option = "C",
+    na.value = "grey90"
+  ) +
+  
+  labs(
+    title = "Global Tuberculosis Incidence",
+    subtitle = "Estimated incidence per 100k population (2023)",
+    fill = "TB incidence\n(per 100k)"
+  ) +
+  
+  theme_void() +
+  
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    plot.subtitle = element_text(size = 12)
+  )
+
+# 3 TB 的时间趋势分析
+## 全球总体趋势
+### 分别画出TB发病率与死亡率的全球变化趋势
+tb_global <- tb %>%
+  group_by(year) %>%
+  summarise(
+    total_incidence =
+      sum(e_inc_num, na.rm = TRUE),
+    total_mortality =
+      sum(e_mort_num, na.rm = TRUE)
+  )
+
+ggplot(
+  tb_global,
+  aes(
+    x = year,
+    y = total_incidence
+  )
+) +
+  geom_line()
+
+ggplot(
+  tb_global,
+  aes(
+    x = year,
+    y = total_mortality
+  )
+) +
+  geom_line()
+
+## 国家层级的趋势分析
+### 画出India、China、South Africa三个国家TB发病率随着时间变化的趋势
+tb_selected <- tb %>%
+  filter(
+    country %in%
+      c("India", "China", "South Africa")
+  )
+
+ggplot(
+  tb_selected,
+  aes(
+    x = year,
+    y = e_inc_100k,
+    color = country
+  )
+) +
+  geom_line()
+
+# 4 从疾病数量到疾病负担
+## 发病率排序
+### 以国家为单位，从高到低排序，展示2023年TB发病率前10的国家
+tb %>%
+  filter(year == 2023) %>%
+  select(
+    country,
+    e_inc_100k
+  ) %>%
+  arrange(desc(e_inc_100k)) %>%
+  slice_head(n = 10)
+
+## 死亡率排序
+### 以国家为单位，从高到低排序，展示2023年TB死亡率前10的国家
+tb %>%
+  filter(year == 2023) %>%
+  select(
+    country,
+    e_mort_100k
+  ) %>%
+  arrange(desc(e_mort_100k)) %>%
+  slice_head(n = 10)
+
+## 比较发病率与死亡率
+### 以国家为单位，列出来近20年里该国 TB 的发病率与死亡率
+tb %>%
+  group_by(country) %>%
+  summarise(
+    mean_incidence =
+      mean(e_inc_100k, na.rm = TRUE),
+    mean_mortality =
+      mean(e_mort_100k, na.rm = TRUE)
+  )
+
+## 发病率与CFR
+### 以发病率为横坐标，病死率为纵坐标画散点图（取2023年的数据），比较不同国家
+### 发病率和病死率的关系
+tb_cfr <- tb %>%
+  filter(year == 2023) %>%
+  select(
+    country,
+    e_inc_100k,
+    cfr
+  ) %>%
+  drop_na()
+
+ggplot(
+  tb_cfr,
+  aes(
+    x = e_inc_100k,
+    y = cfr
+  )
+) +
+  
+  geom_point(
+    alpha = 0.7
+  ) +
+  
+  geom_text_repel(
+    aes(label = country),
+    size = 3
+  ) +
+  
+  labs(
+    title = "Incidence vs CFR",
+    x = "Incidence per 100k",
+    y = "Case Fatality Rate"
+  ) +
+  
+  theme_minimal()
+
+# 5 HIV、人口与 TB 风险模式
+## 比较HIV相关TB死亡率与TB总体死亡率
+### 在同一个数据框中，展示不同区域近20年HIV相关TB死亡率、非HIV相关TB死亡率与
+### TB总体死亡率
+tb_hiv <- tb %>%
+  group_by(g_whoregion) %>%
+  summarise(
+    tb_mortality =
+      mean(e_mort_100k, na.rm = TRUE),
+    
+    hiv_tb_mortality =
+      mean(e_mort_tbhiv_100k, na.rm = TRUE),
+    
+    non_hiv_tb_mortality =
+      mean(e_mort_exc_tbhiv_100k, na.rm = TRUE)
+  )
+
+tb_hiv
+

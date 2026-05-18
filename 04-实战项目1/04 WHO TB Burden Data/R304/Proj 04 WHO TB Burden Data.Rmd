@@ -295,6 +295,35 @@ ggplot(
 ) +
   geom_line()
 ```
+## Covid-19时期 TB 负担变化观察
+```{r}
+ggplot(
+  tb_global,
+  aes(
+    x = year,
+    y = total_incidence
+  )
+) +
+
+  geom_line(
+    linewidth = 1
+  ) +
+
+  geom_vline(
+    xintercept = 2020,
+    linetype = "dashed",
+    color = "red"
+  ) +
+
+  labs(
+    title = "Global TB Incidence Trend",
+    subtitle = "COVID-19 marked at 2020",
+    x = "Year",
+    y = "Total incidence"
+  ) +
+
+  theme_minimal()
+```
 
 
 # 4 从疾病数量到疾病负担
@@ -372,8 +401,34 @@ ggplot(
 ```
 
 
-
 # 5 HIV、人口与 TB 风险模式
+## HIV相关的TB死亡率
+```{r}
+tb %>%
+  group_by(g_whoregion) %>%
+  summarise(
+    hiv_tb_mortality =
+      mean(e_mort_tbhiv_100k, na.rm = TRUE)
+  )
+```
+
+## 比较HIV相关TB死亡率与TB总体死亡率
+```{r}
+tb_hiv <- tb %>%
+  group_by(g_whoregion) %>%
+  summarise(
+    tb_mortality =
+      mean(e_mort_100k, na.rm = TRUE),
+
+    hiv_tb_mortality =
+      mean(e_mort_tbhiv_100k, na.rm = TRUE),
+
+    non_hiv_tb_mortality =
+      mean(e_mort_exc_tbhiv_100k, na.rm = TRUE)
+  )
+
+tb_hiv
+```
 
 
 # 6 把公共卫生分析组织成研究故事
